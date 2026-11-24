@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FrameLA1 Interactive Quantum Lab — Q = Σ γᵢ Bᵢ Bᵢ*</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #FAF9F6;
+      color: #111827;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="range"] {
+      accent-color: #1D4ED8;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased">
+
+  <!-- Sticky KPI Summary Bar -->
+  <header class="sticky top-0 z-30 bg-[#FAF9F6]/95 backdrop-blur border-b border-stone-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-slate-900 text-white text-xs font-mono-num font-semibold">FrameLA1</span>
+          <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+            <span data-i18n="appTitle">Interactive Lab</span> <span class="font-mono-num text-blue-700">Q = &Sigma; &gamma;<sub>i</sub> B<sub>i</sub> B<sub>i</sub>*</span>
+          </h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Language Switcher -->
+          <div class="inline-flex rounded-md border border-stone-300 bg-white overflow-hidden" role="group" aria-label="Language">
+            <button id="btn-lang-ru" type="button" data-lang="ru" class="lang-btn px-2 py-1 text-xs font-semibold transition">RU</button>
+            <button id="btn-lang-en" type="button" data-lang="en" class="lang-btn px-2 py-1 text-xs font-semibold transition">EN</button>
+          </div>
+          <button id="btn-reroll" type="button" data-i18n="btnReroll" class="px-2.5 py-1 text-xs font-medium rounded-md border border-stone-300 bg-white hover:bg-stone-100 text-slate-700 transition">
+            New seed
+          </button>
+          <button id="btn-reset" type="button" data-i18n="btnReset" class="px-2.5 py-1 text-xs font-medium rounded-md border border-stone-300 bg-white hover:bg-stone-100 text-slate-700 transition">
+            Reset
+          </button>
+          <button id="btn-deploy-modal" type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-slate-900 hover:bg-slate-800 text-white transition">
+            GitHub Pages
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Strip -->
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div data-i18n="kpiDim" class="text-[10px] uppercase tracking-wider text-slate-500">Dimension D</div>
+          <div id="kpi-D" class="text-sm sm:text-base font-bold font-mono-num text-slate-900">35</div>
+        </div>
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div data-i18n-html="kpiDefect" class="text-[10px] uppercase tracking-wider text-slate-500">Defect <span class="normal-case">e</span></div>
+          <div class="flex items-center gap-1.5">
+            <span id="kpi-e" class="text-sm sm:text-base font-bold font-mono-num text-slate-900">0.004</span>
+            <span id="kpi-e-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">&le; 0.25</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div data-i18n-html="kpiFlatness" class="text-[10px] uppercase tracking-wider text-slate-500">Flatness <span class="normal-case">&eta;</span></div>
+          <div id="kpi-eta" class="text-sm sm:text-base font-bold font-mono-num text-teal-700">0.120</div>
+        </div>
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div class="text-[10px] tracking-wider text-slate-500 font-medium">&rho;<sub>quad</sub> (&varepsilon;<sub>max</sub>)</div>
+          <div id="kpi-rho" class="text-sm sm:text-base font-bold font-mono-num text-red-700">0.380</div>
+        </div>
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div data-i18n-html="kpiCantelli" class="text-[10px] uppercase tracking-wider text-slate-500">Cantelli (&le;)</div>
+          <div id="kpi-cantelli" class="text-sm sm:text-base font-bold font-mono-num text-amber-700">32%</div>
+        </div>
+        <div class="bg-white rounded-lg border border-stone-200 px-2.5 py-1.5">
+          <div data-i18n="kpiViolations" class="text-[10px] uppercase tracking-wider text-slate-500">Violations</div>
+          <div id="kpi-violations" class="text-sm sm:text-base font-bold font-mono-num text-emerald-700">0 / 0</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Controls Sidebar -->
+    <aside class="lg:col-span-4 space-y-4">
+      <section class="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+        <h2 data-i18n="secPresets" class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Scenario Presets</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" data-preset="default" data-i18n="presetDefault" class="preset-btn px-2.5 py-2 text-xs font-medium rounded-lg border border-stone-200 bg-stone-50 hover:bg-blue-50 hover:border-blue-300 text-slate-800 text-left transition">
+            Baseline (D=35)
+          </button>
+          <button type="button" data-preset="high-noise" data-i18n="presetHighNoise" class="preset-btn px-2.5 py-2 text-xs font-medium rounded-lg border border-stone-200 bg-stone-50 hover:bg-blue-50 hover:border-blue-300 text-slate-800 text-left transition">
+            High Noise
+          </button>
+          <button type="button" data-preset="ultra-flat" data-i18n="presetUltraFlat" class="preset-btn px-2.5 py-2 text-xs font-medium rounded-lg border border-stone-200 bg-stone-50 hover:bg-blue-50 hover:border-blue-300 text-slate-800 text-left transition">
+            Near-Flat Frame
+          </button>
+          <button type="button" data-preset="overpacked" data-i18n="presetOverpacked" class="preset-btn px-2.5 py-2 text-xs font-medium rounded-lg border border-stone-200 bg-stone-50 hover:bg-blue-50 hover:border-blue-300 text-slate-800 text-left transition">
+            AQECC Overpacking
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-stone-200 p-4 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 data-i18n="secFrameParams" class="text-xs font-bold uppercase tracking-wider text-slate-500">Frame Parameters (Panels 1–2)</h2>
+          <span id="compute-time" class="text-[11px] font-mono-num text-slate-400">0 ms</span>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-d" data-i18n-html="lblD" class="text-slate-700">System dim <code>d</code> (D = d&sup2; &minus; 1)</label>
+            <span id="val-d" class="font-mono-num font-semibold text-blue-700">6 (D=35)</span>
+          </div>
+          <input id="inp-d" type="range" min="3" max="6" step="1" value="6" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-mdense" data-i18n-html="lblMDense" class="text-slate-700">Dense frame: settings <code>m<sub>dense</sub></code></label>
+            <span id="val-mdense" class="font-mono-num font-semibold text-blue-700">45</span>
+          </div>
+          <input id="inp-mdense" type="range" min="15" max="70" step="1" value="45" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-msparse" data-i18n-html="lblMSparse" class="text-slate-700">Sparse frame: <code>m<sub>sparse</sub></code></label>
+            <span id="val-msparse" class="font-mono-num font-semibold text-amber-700">10</span>
+          </div>
+          <input id="inp-msparse" type="range" min="4" max="25" step="1" value="10" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-noise" data-i18n-html="lblNoise" class="text-slate-700">Calibration noise <code>&sigma;</code></label>
+            <span id="val-noise" class="font-mono-num font-semibold text-blue-700">0.050</span>
+          </div>
+          <input id="inp-noise" type="range" min="0" max="0.22" step="0.005" value="0.05" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-eps" data-i18n-html="lblEps" class="text-slate-700">Max pruning <code>&varepsilon;<sub>max</sub></code></label>
+            <span id="val-eps" class="font-mono-num font-semibold text-blue-700">0.30</span>
+          </div>
+          <input id="inp-eps" type="range" min="0.10" max="0.45" step="0.05" value="0.30" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-alpha" data-i18n-html="lblAlpha" class="text-slate-700">Cantelli threshold <code>&alpha;</code> (cutoff 1&minus;&alpha;)</label>
+            <span id="val-alpha" class="font-mono-num font-semibold text-red-700">0.50</span>
+          </div>
+          <input id="inp-alpha" type="range" min="0.15" max="0.85" step="0.05" value="0.50" class="w-full" />
+        </div>
+      </section>
+
+      <section class="bg-white rounded-xl border border-stone-200 p-4 shadow-sm space-y-4">
+        <h2 data-i18n="secAqeccParams" class="text-xs font-bold uppercase tracking-wider text-slate-500">AQECC Code Parameters (Panel 3)</h2>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-dl" data-i18n-html="lblDL" class="text-slate-700">Logical dimension <code>d<sub>L</sub></code></label>
+            <span id="val-dl" class="font-mono-num font-semibold text-blue-700">4</span>
+          </div>
+          <input id="inp-dl" type="range" min="2" max="6" step="1" value="4" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-dp" data-i18n-html="lblDP" class="text-slate-700">Physical dimension <code>d<sub>P</sub></code></label>
+            <span id="val-dp" class="font-mono-num font-semibold text-blue-700">32</span>
+          </div>
+          <input id="inp-dp" type="range" min="16" max="48" step="4" value="32" class="w-full" />
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-medium mb-1">
+            <label for="inp-aqnoise" data-i18n-html="lblAqNoise" class="text-slate-700">Encoder noise <code>&sigma;<sub>code</sub></code></label>
+            <span id="val-aqnoise" class="font-mono-num font-semibold text-blue-700">0.060</span>
+          </div>
+          <input id="inp-aqnoise" type="range" min="0" max="0.20" step="0.01" value="0.06" class="w-full" />
+        </div>
+
+        <button id="btn-export-json" type="button" data-i18n="btnExport" class="w-full py-2 px-3 rounded-lg border border-stone-300 bg-stone-50 hover:bg-stone-100 text-xs font-semibold text-slate-800 transition">
+          Export Experiment Results (JSON)
+        </button>
+      </section>
+    </aside>
+
+    <!-- Charts Column -->
+    <section class="lg:col-span-8 space-y-5">
+
+      <!-- Chart 1 -->
+      <article class="bg-white rounded-xl border border-stone-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+          <h3 data-i18n-html="chart1Title" class="text-sm sm:text-base font-bold text-slate-900">
+            1. Adversarial Pruning vs. <span class="font-mono-num text-red-700">FrameLA1</span> Bound
+          </h3>
+          <span id="subtitle-1" class="text-xs font-mono-num text-slate-500"></span>
+        </div>
+        <p data-i18n-html="chart1Desc" class="text-xs text-slate-600 mb-3">
+          The sharp quadratic root <span class="font-mono-num">&rho; &minus; &radic;(&eta;&rho;(1&minus;&rho;)) = (&varepsilon;+&radic;(&varepsilon;e))/(1&minus;&radic;e)</span> upper-bounds the blind-spot fraction even under worst-case sector pruning.
+        </p>
+        <div class="relative h-72">
+          <canvas id="chart-pruning"></canvas>
+        </div>
+      </article>
+
+      <!-- Chart 2 -->
+      <article class="bg-white rounded-xl border border-stone-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+          <h3 data-i18n-html="chart2Title" class="text-sm sm:text-base font-bold text-slate-900">
+            2. Spectrum of <span class="font-mono-num">Q = &Sigma; &gamma;<sub>i</sub> B<sub>i</sub> B<sub>i</sub>*</span> &amp; Cantelli Tail
+          </h3>
+          <span id="subtitle-2" class="text-xs font-mono-num text-slate-500"></span>
+        </div>
+        <p data-i18n-html="chart2Desc" class="text-xs text-slate-600 mb-3">
+          Normalized eigenvalues <span class="font-mono-num">&lambda;<sub>k</sub>(Q)/q&#772;</span>. The fraction of ill-conditioned modes below <span class="font-mono-num">(1&minus;&alpha;)q&#772;</span> is guaranteed to stay at most <span class="font-mono-num">&eta;/(&eta;+&alpha;&sup2;)</span>.
+        </p>
+        <div class="relative h-72">
+          <canvas id="chart-spectrum"></canvas>
+        </div>
+      </article>
+
+      <!-- Chart 3 -->
+      <article class="bg-white rounded-xl border border-stone-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+          <h3 data-i18n="chart3Title" class="text-sm sm:text-base font-bold text-slate-900">
+            3. Overpacked AQECC: Reversed Welch Overlap Lower Bound
+          </h3>
+          <span id="subtitle-3" class="text-xs font-mono-num text-slate-500"></span>
+        </div>
+        <p data-i18n-html="chart3Desc" class="text-xs text-slate-600 mb-3">
+          When <span class="font-mono-num">m&middot;d<sub>L</sub> &gt; d<sub>P</sub></span>, the total off-diagonal error overlap <span class="font-mono-num">S<sub>off</sub> = &Sigma;<sub>i&ne;j</sub> &Vert;V&dagger;E<sub>i</sub>&dagger;E<sub>j</sub>V&Vert;<sub>HS</sub>&sup2;</span> must stay above the red lower bound.
+        </p>
+        <div class="relative h-72">
+          <canvas id="chart-welch"></canvas>
+        </div>
+      </article>
+
+    </section>
+  </main>
+
+  <!-- GitHub Pages Deploy Modal -->
+  <div id="deploy-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4">
+    <div class="bg-white rounded-xl border border-stone-200 max-w-lg w-full p-5 shadow-xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 data-i18n="modalTitle" class="text-base font-bold text-slate-900">Deploy to GitHub Pages in 30 Seconds</h3>
+        <button id="btn-close-modal" type="button" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2">&times;</button>
+      </div>
+      <ol id="modal-steps" class="text-xs sm:text-sm text-slate-700 space-y-2 list-decimal list-inside mb-4"></ol>
+      <div class="flex justify-end">
+        <button id="btn-ok-modal" type="button" data-i18n="modalOk" class="px-3.5 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden bg-slate-900 text-white text-xs font-medium px-3.5 py-2 rounded-lg shadow-lg"></div>
+
+  <script>
+    // --- Internationalization (RU / EN with automatic browser detection) ---
+    const I18N = {
+      ru: {
+        docTitle: "FrameLA1 — Интерактивная квантовая лаборатория (Q = Σ γᵢ Bᵢ Bᵢ*)",
+        appTitle: "Интерактивная лаборатория",
+        btnReroll: "Новый seed",
+        btnReset: "Сброс",
+        kpiDim: "Размерность D",
+        kpiDefect: 'Дефект <span class="normal-case">e</span>',
+        kpiFlatness: 'Плоскостность <span class="normal-case">&eta;</span>',
+        kpiCantelli: "Кантелли (&le;)",
+        kpiViolations: "Нарушения",
+        secPresets: "Пресеты сценариев",
+        presetDefault: "Базовый (D=35)",
+        presetHighNoise: "Сильный шум",
+        presetUltraFlat: "Плоский фрейм",
+        presetOverpacked: "Переупаковка AQECC",
+        secFrameParams: "Параметры фрейма (Панели 1–2)",
+        lblD: "Размерность системы <code>d</code> (D = d&sup2; &minus; 1)",
+        lblMDense: "Плотный фрейм: настроек <code>m<sub>dense</sub></code>",
+        lblMSparse: "Разреженный фрейм: <code>m<sub>sparse</sub></code>",
+        lblNoise: "Калибровочный шум <code>&sigma;</code>",
+        lblEps: "Макс. прореживание <code>&varepsilon;<sub>max</sub></code>",
+        lblAlpha: "Порог Кантелли <code>&alpha;</code> (отсечка 1&minus;&alpha;)",
+        secAqeccParams: "Параметры кода AQECC (Панель 3)",
+        lblDL: "Логическая размерность <code>d<sub>L</sub></code>",
+        lblDP: "Физическая размерность <code>d<sub>P</sub></code>",
+        lblAqNoise: "Шум кодировщика <code>&sigma;<sub>code</sub></code>",
+        btnExport: "Скачать результаты эксперимента (JSON)",
+        chart1Title: '1. Устойчивость к прореживанию vs. граница <span class="font-mono-num text-red-700">FrameLA1</span>',
+        chart1Desc: 'Точный квадратичный корень <span class="font-mono-num">&rho; &minus; &radic;(&eta;&rho;(1&minus;&rho;)) = (&varepsilon;+&radic;(&varepsilon;e))/(1&minus;&radic;e)</span> ограничивает долю «слепых» направлений сверху даже при наихудшем (adversarial) удалении секторов.',
+        chart2Title: '2. Спектр <span class="font-mono-num">Q = &Sigma; &gamma;<sub>i</sub> B<sub>i</sub> B<sub>i</sub>*</span> и хвост Кантелли',
+        chart2Desc: 'Нормированные собственные значения <span class="font-mono-num">&lambda;<sub>k</sub>(Q)/q&#772;</span>. Доля плохо обусловленных мод ниже <span class="font-mono-num">(1&minus;&alpha;)q&#772;</span> гарантированно не превышает <span class="font-mono-num">&eta;/(&eta;+&alpha;&sup2;)</span>.',
+        chart3Title: "3. Переупакованный AQECC: обращённая нижняя оценка Велча",
+        chart3Desc: 'При <span class="font-mono-num">m&middot;d<sub>L</sub> &gt; d<sub>P</sub></span> сумма внедиагональных перекрытий ошибок <span class="font-mono-num">S<sub>off</sub> = &Sigma;<sub>i&ne;j</sub> &Vert;V&dagger;E<sub>i</sub>&dagger;E<sub>j</sub>V&Vert;<sub>HS</sub>&sup2;</span> обязана лежать выше красной границы.',
+        modalTitle: "Деплой на GitHub Pages за 30 секунд",
+        modalOk: "Понятно",
+        modalSteps: [
+          'Создайте новый публичный репозиторий на GitHub (например, <code class="bg-stone-100 px-1 rounded">framela1-lab</code>).',
+          'Загрузите в корень репозитория файл <code class="bg-stone-100 px-1 rounded">index.html</code> из скачанного архива — сервер и Python не нужны, вся линейная алгебра считается прямо в браузере.',
+          'Откройте <strong>Settings &rarr; Pages &rarr; Source: Deploy from a branch &rarr; main / root</strong>. Через минуту страница откроется по адресу <code class="bg-stone-100 px-1 rounded">https://&lt;username&gt;.github.io/framela1-lab/</code>.'
+        ],
+        sub1: (e, eta) => `Блочный фрейм: e=${e.toFixed(4)}, η=${eta.toFixed(4)}`,
+        sub2: (cut, ed, cd, es, cs) => `Хвост ниже ${cut.toFixed(2)}: плотн. ${Math.round(ed*100)}% (≤${Math.round(cd*100)}%) | разреж. ${Math.round(es*100)}% (≤${Math.round(cs*100)}%)`,
+        sub3: (dL, dP, me) => `d_L=${dL}, d_P=${dP}, средний e=${me.toFixed(4)}`,
+        c1DsLin: "Линейная η + 4ε + 4√e",
+        c1DsQuad: "Точный корень FrameLA1 (ρ_quad)",
+        c1DsAdv: "Худшее прореживание секторов (ρ_adv)",
+        c1DsRand: "Случайные тени Хаара (ρ_rand)",
+        c1X: "Отброшенная доля исходных направлений ε",
+        c1Y: "Доля слепых направлений ρ = codim / D",
+        c2DsDense: (m) => `Плотный фрейм (m=${m})`,
+        c2DsSparse: (m) => `Разреженный (m=${m})`,
+        c2DsIdeal: "Идеал (λ/q̄ = 1)",
+        c2DsCut: (c) => `Отсечка (1−α) = ${c.toFixed(2)}`,
+        c2X: "Индекс собственного значения k (1 … D)",
+        c2Y: "Нормированное λ_k(Q) / q̄",
+        c3DsEmp: "Эмпирическое перекрытие S_off",
+        c3DsIdeal: "Идеальная граница Велча (e=0)",
+        c3DsNoisy: "Шумная граница FrameLA1 (запретная зона ниже)",
+        c3X: "Коэффициент упаковки m·d_L / d_P",
+        c3Y: "Суммарное внедиагональное перекрытие S_off",
+        toastPreset: (name) => `Применён пресет: ${name}`,
+        toastSeed: (s) => `Новый seed: ${s}`,
+        toastReset: "Параметры сброшены",
+        toastExport: "JSON-результаты сохранены",
+        toastLang: "Язык: Русский"
+      },
+      en: {
+        docTitle: "FrameLA1 Interactive Quantum Lab — Q = Σ γᵢ Bᵢ Bᵢ*",
+        appTitle: "Interactive Lab",
+        btnReroll: "New seed",
+        btnReset: "Reset",
+        kpiDim: "Dimension D",
+        kpiDefect: 'Defect <span class="normal-case">e</span>',
+        kpiFlatness: 'Flatness <span class="normal-case">&eta;</span>',
+        kpiCantelli: "Cantelli (&le;)",
+        kpiViolations: "Violations",
+        secPresets: "Scenario Presets",
+        presetDefault: "Baseline (D=35)",
+        presetHighNoise: "High Noise",
+        presetUltraFlat: "Near-Flat Frame",
+        presetOverpacked: "AQECC Overpacking",
+        secFrameParams: "Frame Parameters (Panels 1–2)",
+        lblD: "System dim <code>d</code> (D = d&sup2; &minus; 1)",
+        lblMDense: "Dense frame: settings <code>m<sub>dense</sub></code>",
+        lblMSparse: "Sparse frame: <code>m<sub>sparse</sub></code>",
+        lblNoise: "Calibration noise <code>&sigma;</code>",
+        lblEps: "Max pruning <code>&varepsilon;<sub>max</sub></code>",
+        lblAlpha: "Cantelli threshold <code>&alpha;</code> (cutoff 1&minus;&alpha;)",
+        secAqeccParams: "AQECC Code Parameters (Panel 3)",
+        lblDL: "Logical dimension <code>d<sub>L</sub></code>",
+        lblDP: "Physical dimension <code>d<sub>P</sub></code>",
+        lblAqNoise: "Encoder noise <code>&sigma;<sub>code</sub></code>",
+        btnExport: "Export Experiment Results (JSON)",
+        chart1Title: '1. Adversarial Pruning vs. <span class="font-mono-num text-red-700">FrameLA1</span> Bound',
+        chart1Desc: 'The sharp quadratic root <span class="font-mono-num">&rho; &minus; &radic;(&eta;&rho;(1&minus;&rho;)) = (&varepsilon;+&radic;(&varepsilon;e))/(1&minus;&radic;e)</span> upper-bounds the blind-spot fraction even under worst-case sector pruning.',
+        chart2Title: '2. Spectrum of <span class="font-mono-num">Q = &Sigma; &gamma;<sub>i</sub> B<sub>i</sub> B<sub>i</sub>*</span> &amp; Cantelli Tail',
+        chart2Desc: 'Normalized eigenvalues <span class="font-mono-num">&lambda;<sub>k</sub>(Q)/q&#772;</span>. The fraction of ill-conditioned modes below <span class="font-mono-num">(1&minus;&alpha;)q&#772;</span> is guaranteed to stay at most <span class="font-mono-num">&eta;/(&eta;+&alpha;&sup2;)</span>.',
+        chart3Title: "3. Overpacked AQECC: Reversed Welch Overlap Lower Bound",
+        chart3Desc: 'When <span class="font-mono-num">m&middot;d<sub>L</sub> &gt; d<sub>P</sub></span>, the total off-diagonal error overlap <span class="font-mono-num">S<sub>off</sub> = &Sigma;<sub>i&ne;j</sub> &Vert;V&dagger;E<sub>i</sub>&dagger;E<sub>j</sub>V&Vert;<sub>HS</sub>&sup2;</span> must stay above the red lower bound.',
+        modalTitle: "Deploy to GitHub Pages in 30 Seconds",
+        modalOk: "Got it",
+        modalSteps: [
+          'Create a new public GitHub repository (e.g., <code class="bg-stone-100 px-1 rounded">framela1-lab</code>).',
+          'Upload <code class="bg-stone-100 px-1 rounded">index.html</code> from the downloaded archive to the repo root — no server or Python needed, all linear algebra runs directly in the browser.',
+          'Go to <strong>Settings &rarr; Pages &rarr; Source: Deploy from a branch &rarr; main / root</strong>. Within a minute it will be live at <code class="bg-stone-100 px-1 rounded">https://&lt;username&gt;.github.io/framela1-lab/</code>.'
+        ],
+        sub1: (e, eta) => `Block frame: e=${e.toFixed(4)}, η=${eta.toFixed(4)}`,
+        sub2: (cut, ed, cd, es, cs) => `Tail below ${cut.toFixed(2)}: dense ${Math.round(ed*100)}% (≤${Math.round(cd*100)}%) | sparse ${Math.round(es*100)}% (≤${Math.round(cs*100)}%)`,
+        sub3: (dL, dP, me) => `d_L=${dL}, d_P=${dP}, mean e=${me.toFixed(4)}`,
+        c1DsLin: "Linear η + 4ε + 4√e",
+        c1DsQuad: "Sharp FrameLA1 root (ρ_quad)",
+        c1DsAdv: "Adversarial sector pruning (ρ_adv)",
+        c1DsRand: "Random Haar shadows (ρ_rand)",
+        c1X: "Discarded source subspace fraction ε",
+        c1Y: "Blind-spot codimension fraction ρ = codim / D",
+        c2DsDense: (m) => `Near-tight frame (m=${m})`,
+        c2DsSparse: (m) => `Under-sampled (m=${m})`,
+        c2DsIdeal: "Ideal flat (λ/q̄ = 1)",
+        c2DsCut: (c) => `Cutoff (1−α) = ${c.toFixed(2)}`,
+        c2X: "Eigenvalue index k (1 … D)",
+        c2Y: "Normalized λ_k(Q) / q̄",
+        c3DsEmp: "Empirical overlap S_off",
+        c3DsIdeal: "Ideal Welch bound (e=0)",
+        c3DsNoisy: "Noisy FrameLA1 Welch bound (forbidden below)",
+        c3X: "Packing ratio m·d_L / d_P",
+        c3Y: "Total off-diagonal overlap S_off",
+        toastPreset: (name) => `Preset applied: ${name}`,
+        toastSeed: (s) => `New seed: ${s}`,
+        toastReset: "Parameters reset",
+        toastExport: "JSON results downloaded",
+        toastLang: "Language: English"
+      }
+    };
+
+    function detectInitialLang() {
+      try {
+        const saved = localStorage.getItem("framela1_lang");
+        if (saved === "ru" || saved === "en") return saved;
+      } catch (_) {}
+      const langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"]);
+      for (const l of langs) {
+        const code = String(l || "").toLowerCase();
+        if (code.startsWith("ru") || code.startsWith("uk") || code.startsWith("be")) return "ru";
+        if (code.startsWith("en")) return "en";
+      }
+      return "en";
+    }
+
+    let currentLang = detectInitialLang();
+    function t(key) { return I18N[currentLang][key]; }
+
+    function applyLanguage(lang, announce) {
+      currentLang = (lang === "ru") ? "ru" : "en";
+      try { localStorage.setItem("framela1_lang", currentLang); } catch (_) {}
+      document.documentElement.lang = currentLang;
+      document.title = t("docTitle");
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const k = el.getAttribute("data-i18n");
+        if (I18N[currentLang][k] !== undefined) el.textContent = I18N[currentLang][k];
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+        const k = el.getAttribute("data-i18n-html");
+        if (I18N[currentLang][k] !== undefined) el.innerHTML = I18N[currentLang][k];
+      });
+
+      const stepsEl = document.getElementById("modal-steps");
+      stepsEl.innerHTML = t("modalSteps").map((s) => `<li>${s}</li>`).join("");
+
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        const active = btn.dataset.lang === currentLang;
+        btn.className = active
+          ? "lang-btn px-2 py-1 text-xs font-semibold bg-slate-900 text-white transition"
+          : "lang-btn px-2 py-1 text-xs font-semibold bg-white text-slate-600 hover:bg-stone-100 transition";
+      });
+
+      if (announce) showToast(t("toastLang"));
+    }
+
+    // --- Deterministic PRNG (Mulberry32 + Box-Muller) ---
+    function createRng(seed) {
+      let a = seed >>> 0;
+      function next() {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        let tVal = Math.imul(a ^ (a >>> 15), 1 | a);
+        tVal = (tVal + Math.imul(tVal ^ (tVal >>> 7), 61 | tVal)) ^ tVal;
+        return ((tVal ^ (tVal >>> 14)) >>> 0) / 4294967296;
+      }
+      function randn() {
+        let u = 0, v = 0;
+        while (u === 0) u = next();
+        while (v === 0) v = next();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+      }
+      return { next, randn };
+    }
+
+    // --- Linear Algebra Helpers ---
+    function matMul(A, rA, cA, B, cB) {
+      const C = new Float64Array(rA * cB);
+      for (let i = 0; i < rA; i++) {
+        const iOff = i * cA;
+        const cOff = i * cB;
+        for (let k = 0; k < cA; k++) {
+          const aik = A[iOff + k];
+          if (aik === 0) continue;
+          const kOff = k * cB;
+          for (let j = 0; j < cB; j++) C[cOff + j] += aik * B[kOff + j];
+        }
+      }
+      return C;
+    }
+
+    function matMulATB(A, rA, cA, B, cB) {
+      const C = new Float64Array(cA * cB);
+      for (let k = 0; k < rA; k++) {
+        const aOff = k * cA;
+        const bOff = k * cB;
+        for (let i = 0; i < cA; i++) {
+          const aki = A[aOff + i];
+          if (aki === 0) continue;
+          const cOff = i * cB;
+          for (let j = 0; j < cB; j++) C[cOff + j] += aki * B[bOff + j];
+        }
+      }
+      return C;
+    }
+
+    function matMulABT(A, rA, cA, B, rB) {
+      const C = new Float64Array(rA * rB);
+      for (let i = 0; i < rA; i++) {
+        const aOff = i * cA;
+        const cOff = i * rB;
+        for (let j = 0; j < rB; j++) {
+          const bOff = j * cA;
+          let sum = 0;
+          for (let k = 0; k < cA; k++) sum += A[aOff + k] * B[bOff + k];
+          C[cOff + j] = sum;
+        }
+      }
+      return C;
+    }
+
+    function frobNormSq(A) {
+      let s = 0;
+      for (let i = 0; i < A.length; i++) s += A[i] * A[i];
+      return s;
+    }
+
+    function frobDistIdentitySq(K, n) {
+      let s = 0;
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          const v = K[i * n + j] - (i === j ? 1.0 : 0.0);
+          s += v * v;
+        }
+      }
+      return s;
+    }
+
+    function randomOrthogonal(n, rng) {
+      const M = new Float64Array(n * n);
+      for (let i = 0; i < n * n; i++) M[i] = rng.randn();
+      for (let j = 0; j < n; j++) {
+        for (let k = 0; k < j; k++) {
+          let dot = 0;
+          for (let i = 0; i < n; i++) dot += M[i * n + k] * M[i * n + j];
+          for (let i = 0; i < n; i++) M[i * n + j] -= dot * M[i * n + k];
+        }
+        let norm = 0;
+        for (let i = 0; i < n; i++) norm += M[i * n + j] * M[i * n + j];
+        norm = Math.sqrt(norm) || 1.0;
+        for (let i = 0; i < n; i++) M[i * n + j] /= norm;
+      }
+      return M;
+    }
+
+    function symEigenvalues(A_in, n) {
+      const A = new Float64Array(A_in);
+      const maxIter = 8 * n * n;
+      for (let iter = 0; iter < maxIter; iter++) {
+        let p = 0, q = 1, maxVal = 0;
+        for (let i = 0; i < n; i++) {
+          const iOff = i * n;
+          for (let j = i + 1; j < n; j++) {
+            const v = Math.abs(A[iOff + j]);
+            if (v > maxVal) { maxVal = v; p = i; q = j; }
+          }
+        }
+        if (maxVal < 1e-10) break;
+        const app = A[p * n + p];
+        const aqq = A[q * n + q];
+        const apq = A[p * n + q];
+        const tau = (aqq - app) / (2.0 * apq);
+        const tVal = tau >= 0 ? 1.0 / (tau + Math.sqrt(1.0 + tau * tau)) : -1.0 / (-tau + Math.sqrt(1.0 + tau * tau));
+        const c = 1.0 / Math.sqrt(1.0 + tVal * tVal);
+        const s = tVal * c;
+
+        A[p * n + p] = app - tVal * apq;
+        A[q * n + q] = aqq + tVal * apq;
+        A[p * n + q] = 0.0;
+        A[q * n + p] = 0.0;
+
+        for (let k = 0; k < n; k++) {
+          if (k === p || k === q) continue;
+          const akp = A[k * n + p];
+          const akq = A[k * n + q];
+          const nkp = c * akp - s * akq;
+          const nkq = s * akp + c * akq;
+          A[k * n + p] = nkp; A[p * n + k] = nkp;
+          A[k * n + q] = nkq; A[q * n + k] = nkq;
+        }
+      }
+      const eigs = new Float64Array(n);
+      for (let i = 0; i < n; i++) eigs[i] = Math.max(0.0, A[i * n + i]);
+      eigs.sort();
+      return eigs;
+    }
+
+    function numericalRank(cols, D) {
+      if (cols.length === 0) return 0;
+      const basis = [];
+      let maxNormSq = 0;
+      for (let idx = 0; idx < cols.length; idx++) {
+        let s = 0;
+        const v = cols[idx];
+        for (let i = 0; i < D; i++) s += v[i] * v[i];
+        if (s > maxNormSq) maxNormSq = s;
+      }
+      const tol = 1e-10 * (maxNormSq || 1.0);
+      for (let idx = 0; idx < cols.length; idx++) {
+        const v = new Float64Array(cols[idx]);
+        for (let b = 0; b < basis.length; b++) {
+          const u = basis[b];
+          let dot = 0;
+          for (let i = 0; i < D; i++) dot += u[i] * v[i];
+          for (let i = 0; i < D; i++) v[i] -= dot * u[i];
+        }
+        let nSq = 0;
+        for (let i = 0; i < D; i++) nSq += v[i] * v[i];
+        if (nSq > tol) {
+          const inv = 1.0 / Math.sqrt(nSq);
+          for (let i = 0; i < D; i++) v[i] *= inv;
+          basis.push(v);
+          if (basis.length === D) break;
+        }
+      }
+      return basis.length;
+    }
+
+    // --- Core FrameLA1 Experiments ---
+    function sharpQuadraticBound(eta, e, eps) {
+      if (e >= 1.0) return 1.0;
+      const delta = (eps + Math.sqrt(Math.max(eps * e, 0.0))) / (1.0 - Math.sqrt(e));
+      if (delta >= 1.0) return 1.0;
+      if (eta <= 0.0) return Math.min(delta, 1.0);
+      const a = 1.0 + eta;
+      const b = -(2.0 * delta + eta);
+      const c = delta * delta;
+      const disc = Math.max(b * b - 4.0 * a * c, 0.0);
+      return Math.min(1.0, Math.max(0.0, (-b + Math.sqrt(disc)) / (2.0 * a)));
+    }
+
+    function buildBlockPartitionFrame(D, dBlock, copiesPerSector, noiseSigma, rng) {
+      const Qorth = randomOrthogonal(D, rng);
+      const blocks = [];
+      for (let start = 0; start < D; start += dBlock) {
+        const sz = Math.min(dBlock, D - start);
+        const Us = new Float64Array(D * sz);
+        for (let i = 0; i < D; i++) {
+          for (let j = 0; j < sz; j++) Us[i * sz + j] = Qorth[i * D + (start + j)];
+        }
+        for (let c = 0; c < copiesPerSector; c++) {
+          const M = new Float64Array(sz * sz);
+          for (let i = 0; i < sz; i++) {
+            for (let j = 0; j < sz; j++) {
+              M[i * sz + j] = (i === j ? 1.0 : 0.0) + (noiseSigma / Math.sqrt(sz)) * rng.randn();
+            }
+          }
+          const Bi = matMul(Us, D, sz, M, sz);
+          blocks.push({ mat: Bi, cols: sz });
+        }
+      }
+      return summarizeFrame(blocks, D);
+    }
+
+    function buildRandomShadowFrame(D, dBlock, mSettings, noiseSigma, rng) {
+      const blocks = [];
+      for (let m = 0; m < mSettings; m++) {
+        const U = randomOrthogonal(D, rng);
+        const Bi = new Float64Array(D * dBlock);
+        for (let i = 0; i < D; i++) {
+          for (let j = 0; j < dBlock; j++) {
+            Bi[i * dBlock + j] = U[i * D + j] + (noiseSigma / Math.sqrt(D)) * rng.randn();
+          }
+        }
+        blocks.push({ mat: Bi, cols: dBlock });
+      }
+      return summarizeFrame(blocks, D);
+    }
+
+    function summarizeFrame(blocks, D) {
+      const Q = new Float64Array(D * D);
+      let N = 0;
+      let eSum = 0;
+      for (const b of blocks) {
+        const sz = b.cols;
+        N += sz;
+        const Ki = matMulATB(b.mat, D, sz, b.mat, sz);
+        eSum += frobDistIdentitySq(Ki, sz);
+        const Qi = matMulABT(b.mat, D, sz, b.mat, D);
+        for (let k = 0; k < D * D; k++) Q[k] += Qi[k];
+      }
+      const e = eSum / N;
+      let trQ = 0;
+      for (let i = 0; i < D; i++) trQ += Q[i * D + i];
+      const trQ2 = frobNormSq(Q);
+      const eta = Math.max(0.0, D * trQ2 / (trQ * trQ) - 1.0);
+      return { blocks, Q, e, eta, N };
+    }
+
+    function extractCols(blocks, D) {
+      const cols = [];
+      for (const b of blocks) {
+        for (let j = 0; j < b.cols; j++) {
+          const v = new Float64Array(D);
+          for (let i = 0; i < D; i++) v[i] = b.mat[i * b.cols + j];
+          cols.push(v);
+        }
+      }
+      return cols;
+    }
+
+    function runOverpackedAQECC(dL, dP, noiseSigma, rng) {
+      const ratios = [];
+      const sOffEmp = [];
+      const welchIdeal = [];
+      const welchNoisy = [];
+      const eList = [];
+
+      const mMin = Math.max(2, Math.floor(0.5 * dP / dL));
+      const mMax = Math.max(mMin + 8, Math.ceil(2.4 * dP / dL));
+      const step = Math.max(1, Math.floor((mMax - mMin) / 14));
+
+      for (let m = mMin; m <= mMax; m += step) {
+        const blocks = [];
+        let eSum = 0;
+        const N = m * dL;
+        for (let idx = 0; idx < m; idx++) {
+          const U = randomOrthogonal(dP, rng);
+          const B = new Float64Array(dP * dL);
+          for (let i = 0; i < dP; i++) {
+            for (let j = 0; j < dL; j++) {
+              B[i * dL + j] = U[i * dP + j] + (noiseSigma / Math.sqrt(dP)) * rng.randn();
+            }
+          }
+          const K = matMulATB(B, dP, dL, B, dL);
+          eSum += frobDistIdentitySq(K, dL);
+          blocks.push(B);
+        }
+        const e = eSum / N;
+        eList.push(e);
+
+        let sOff = 0;
+        for (let i = 0; i < m; i++) {
+          for (let j = i + 1; j < m; j++) {
+            const ov = matMulATB(blocks[i], dP, dL, blocks[j], dL);
+            sOff += 2.0 * frobNormSq(ov);
+          }
+        }
+        const lbIdeal = Math.max(0.0, N * (N / dP - 1.0));
+        const lbNoisy = e < 1.0 ? Math.max(0.0, N * (Math.pow(1.0 - Math.sqrt(e), 2) * N / dP - Math.pow(1.0 + Math.sqrt(e), 2))) : 0.0;
+
+        ratios.push((N / dP).toFixed(2));
+        sOffEmp.push(sOff);
+        welchIdeal.push(lbIdeal);
+        welchNoisy.push(lbNoisy);
+      }
+
+      const meanE = eList.reduce((a, b) => a + b, 0) / eList.length;
+      return { ratios, sOffEmp, welchIdeal, welchNoisy, meanE };
+    }
+
+    // --- State & Charts ---
+    const state = {
+      seed: 42,
+      d: 6,
+      mDense: 45,
+      mSparse: 10,
+      noise: 0.05,
+      epsMax: 0.30,
+      alpha: 0.50,
+      dL: 4,
+      dP: 32,
+      aqNoise: 0.06,
+      lastResults: null
+    };
+
+    let chartPruning = null;
+    let chartSpectrum = null;
+    let chartWelch = null;
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.add("hidden"), 2400);
+    }
+
+    function syncInputsFromState() {
+      document.getElementById("inp-d").value = state.d;
+      document.getElementById("inp-mdense").value = state.mDense;
+      document.getElementById("inp-msparse").value = state.mSparse;
+      document.getElementById("inp-noise").value = state.noise;
+      document.getElementById("inp-eps").value = state.epsMax;
+      document.getElementById("inp-alpha").value = state.alpha;
+      document.getElementById("inp-dl").value = state.dL;
+      document.getElementById("inp-dp").value = state.dP;
+      document.getElementById("inp-aqnoise").value = state.aqNoise;
+
+      const D = state.d * state.d - 1;
+      document.getElementById("val-d").textContent = `${state.d} (D=${D})`;
+      document.getElementById("val-mdense").textContent = String(state.mDense);
+      document.getElementById("val-msparse").textContent = String(state.mSparse);
+      document.getElementById("val-noise").textContent = state.noise.toFixed(3);
+      document.getElementById("val-eps").textContent = state.epsMax.toFixed(2);
+      document.getElementById("val-alpha").textContent = state.alpha.toFixed(2);
+      document.getElementById("val-dl").textContent = String(state.dL);
+      document.getElementById("val-dp").textContent = String(state.dP);
+      document.getElementById("val-aqnoise").textContent = state.aqNoise.toFixed(3);
+    }
+
+    function runAndRender() {
+      const t0 = performance.now();
+      const rng = createRng(state.seed);
+      const D = state.d * state.d - 1;
+      const dBlock = state.d - 1;
+
+      const partFrame = buildBlockPartitionFrame(D, dBlock, 2, state.noise, rng);
+      const denseFrame = buildRandomShadowFrame(D, dBlock, state.mDense, state.noise, rng);
+      const sparseFrame = buildRandomShadowFrame(D, dBlock, state.mSparse, state.noise, rng);
+
+      const nPts = 13;
+      const epsGrid = [];
+      const rhoAdv = [];
+      const rhoRand = [];
+      const rhoQuad = [];
+      const rhoLin = [];
+
+      const partCols = extractCols(partFrame.blocks, D);
+      const denseCols = extractCols(denseFrame.blocks, D);
+
+      for (let k = 0; k < nPts; k++) {
+        const eps = (state.epsMax * k) / (nPts - 1);
+        epsGrid.push(eps.toFixed(2));
+
+        const nDropPart = Math.round(eps * partCols.length);
+        const rAdv = numericalRank(partCols.slice(nDropPart), D);
+        rhoAdv.push((D - rAdv) / D);
+
+        const nDropDense = Math.round(eps * denseCols.length);
+        const rRand = numericalRank(denseCols.slice(nDropDense), D);
+        rhoRand.push((D - rRand) / D);
+
+        rhoQuad.push(sharpQuadraticBound(partFrame.eta, partFrame.e, eps));
+        rhoLin.push(Math.min(1.0, partFrame.eta + 4.0 * eps + 4.0 * Math.sqrt(partFrame.e)));
+      }
+
+      let viol1 = 0;
+      for (let k = 0; k < nPts; k++) {
+        if (partFrame.e <= 0.25 && rhoAdv[k] > rhoQuad[k] + 1e-9) viol1++;
+      }
+
+      const eigsDense = symEigenvalues(denseFrame.Q, D);
+      const eigsSparse = symEigenvalues(sparseFrame.Q, D);
+      const meanDense = eigsDense.reduce((a, b) => a + b, 0) / D || 1.0;
+      const meanSparse = eigsSparse.reduce((a, b) => a + b, 0) / D || 1.0;
+      const normDense = Array.from(eigsDense, v => v / meanDense);
+      const normSparse = Array.from(eigsSparse, v => v / meanSparse);
+      const cutoff = 1.0 - state.alpha;
+      const empTailDense = normDense.filter(v => v <= cutoff).length / D;
+      const empTailSparse = normSparse.filter(v => v <= cutoff).length / D;
+      const cantelliDense = denseFrame.eta / (denseFrame.eta + state.alpha * state.alpha);
+      const cantelliSparse = sparseFrame.eta / (sparseFrame.eta + state.alpha * state.alpha);
+
+      const aq = runOverpackedAQECC(state.dL, state.dP, state.aqNoise, rng);
+      let viol3 = 0;
+      for (let k = 0; k < aq.sOffEmp.length; k++) {
+        if (aq.sOffEmp[k] + 1e-6 < aq.welchNoisy[k]) viol3++;
+      }
+
+      const elapsed = Math.round(performance.now() - t0);
+      document.getElementById("compute-time").textContent = `${elapsed} ms`;
+
+      document.getElementById("kpi-D").textContent = String(D);
+      document.getElementById("kpi-e").textContent = partFrame.e.toFixed(4);
+      const eBadge = document.getElementById("kpi-e-badge");
+      if (partFrame.e <= 0.25) {
+        eBadge.textContent = "≤ 0.25";
+        eBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold";
+      } else {
+        eBadge.textContent = "> 0.25";
+        eBadge.className = "text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-800 font-semibold";
+      }
+      document.getElementById("kpi-eta").textContent = denseFrame.eta.toFixed(3);
+      document.getElementById("kpi-rho").textContent = rhoQuad[rhoQuad.length - 1].toFixed(3);
+      document.getElementById("kpi-cantelli").textContent = `${Math.round(cantelliDense * 100)}%`;
+      const violEl = document.getElementById("kpi-violations");
+      violEl.textContent = `${viol1} / ${viol3}`;
+      violEl.className = (viol1 + viol3 === 0)
+        ? "text-sm sm:text-base font-bold font-mono-num text-emerald-700"
+        : "text-sm sm:text-base font-bold font-mono-num text-red-700";
+
+      document.getElementById("subtitle-1").textContent = t("sub1")(partFrame.e, partFrame.eta);
+      document.getElementById("subtitle-2").textContent = t("sub2")(cutoff, empTailDense, cantelliDense, empTailSparse, cantelliSparse);
+      document.getElementById("subtitle-3").textContent = t("sub3")(state.dL, state.dP, aq.meanE);
+
+      renderPruningChart(epsGrid, rhoLin, rhoQuad, rhoAdv, rhoRand);
+      renderSpectrumChart(D, normDense, normSparse, cutoff);
+      renderWelchChart(aq.ratios, aq.sOffEmp, aq.welchIdeal, aq.welchNoisy);
+
+      state.lastResults = {
+        lang: currentLang,
+        params: { ...state, lastResults: undefined },
+        panel1: { D, e: partFrame.e, eta: partFrame.eta, epsGrid, rhoAdv, rhoRand, rhoQuad, rhoLin, violations: viol1 },
+        panel2: { etaDense: denseFrame.eta, etaSparse: sparseFrame.eta, empTailDense, cantelliDense, empTailSparse, cantelliSparse },
+        panel3: { ...aq, violations: viol3 }
+      };
+    }
+
+    function renderPruningChart(labels, rhoLin, rhoQuad, rhoAdv, rhoRand) {
+      const ctx = document.getElementById("chart-pruning").getContext("2d");
+      if (chartPruning) chartPruning.destroy();
+      chartPruning = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: t("c1DsLin"), data: rhoLin, borderColor: "#9CA3AF", borderDash: [6, 4], borderWidth: 2, pointRadius: 0, tension: 0.1 },
+            { label: t("c1DsQuad"), data: rhoQuad, borderColor: "#B91C1C", backgroundColor: "rgba(252, 165, 165, 0.22)", borderWidth: 2.8, pointRadius: 2.5, fill: "+1", tension: 0.15 },
+            { label: t("c1DsAdv"), data: rhoAdv, borderColor: "#1D4ED8", borderWidth: 2.4, pointRadius: 3.5, tension: 0.1 },
+            { label: t("c1DsRand"), data: rhoRand, borderColor: "#0F766E", borderDash: [3, 3], borderWidth: 2, pointRadius: 2.5, tension: 0.1 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 180 },
+          scales: {
+            x: { title: { display: true, text: t("c1X") } },
+            y: { min: 0, max: 1.02, title: { display: true, text: t("c1Y") } }
+          },
+          plugins: { legend: { position: "top", labels: { boxWidth: 14, font: { size: 11 } } } }
+        }
+      });
+    }
+
+    function renderSpectrumChart(D, normDense, normSparse, cutoff) {
+      const ctx = document.getElementById("chart-spectrum").getContext("2d");
+      if (chartSpectrum) chartSpectrum.destroy();
+      const labels = Array.from({ length: D }, (_, i) => String(i + 1));
+      chartSpectrum = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: t("c2DsDense")(state.mDense), data: normDense, borderColor: "#0F766E", borderWidth: 2.5, pointRadius: 2.5, tension: 0.15 },
+            { label: t("c2DsSparse")(state.mSparse), data: normSparse, borderColor: "#D97706", borderWidth: 2.5, pointRadius: 2.5, tension: 0.15 },
+            { label: t("c2DsIdeal"), data: Array(D).fill(1.0), borderColor: "#4B5563", borderWidth: 1.3, pointRadius: 0 },
+            { label: t("c2DsCut")(cutoff), data: Array(D).fill(cutoff), borderColor: "#B91C1C", borderDash: [6, 4], borderWidth: 1.8, pointRadius: 0, backgroundColor: "rgba(254, 226, 226, 0.35)", fill: "origin" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 180 },
+          scales: {
+            x: { title: { display: true, text: t("c2X") } },
+            y: { min: 0, title: { display: true, text: t("c2Y") } }
+          },
+          plugins: { legend: { position: "top", labels: { boxWidth: 14, font: { size: 11 } } } }
+        }
+      });
+    }
+
+    function renderWelchChart(ratios, sOffEmp, welchIdeal, welchNoisy) {
+      const ctx = document.getElementById("chart-welch").getContext("2d");
+      if (chartWelch) chartWelch.destroy();
+      chartWelch = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ratios,
+          datasets: [
+            { label: t("c3DsEmp"), data: sOffEmp, borderColor: "#1D4ED8", borderWidth: 2.6, pointRadius: 3.5, tension: 0.15 },
+            { label: t("c3DsIdeal"), data: welchIdeal, borderColor: "#6B7280", borderDash: [6, 4], borderWidth: 2, pointRadius: 0, tension: 0.15 },
+            { label: t("c3DsNoisy"), data: welchNoisy, borderColor: "#B91C1C", backgroundColor: "rgba(252, 165, 165, 0.25)", borderWidth: 2.8, pointRadius: 2, fill: "origin", tension: 0.15 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 180 },
+          scales: {
+            x: { title: { display: true, text: t("c3X") } },
+            y: { min: 0, title: { display: true, text: t("c3Y") } }
+          },
+          plugins: { legend: { position: "top", labels: { boxWidth: 14, font: { size: 11 } } } }
+        }
+      });
+    }
+
+    // --- Event Wiring ---
+    const bindings = [
+      ["inp-d", "d", Number],
+      ["inp-mdense", "mDense", Number],
+      ["inp-msparse", "mSparse", Number],
+      ["inp-noise", "noise", Number],
+      ["inp-eps", "epsMax", Number],
+      ["inp-alpha", "alpha", Number],
+      ["inp-dl", "dL", Number],
+      ["inp-dp", "dP", Number],
+      ["inp-aqnoise", "aqNoise", Number]
+    ];
+
+    for (const [id, key, cast] of bindings) {
+      document.getElementById(id).addEventListener("input", (ev) => {
+        state[key] = cast(ev.target.value);
+        syncInputsFromState();
+        runAndRender();
+      });
+    }
+
+    document.querySelectorAll(".lang-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.lang === currentLang) return;
+        applyLanguage(btn.dataset.lang, true);
+        runAndRender();
+      });
+    });
+
+    const presets = {
+      "default": { d: 6, mDense: 45, mSparse: 10, noise: 0.05, epsMax: 0.30, alpha: 0.50, dL: 4, dP: 32, aqNoise: 0.06 },
+      "high-noise": { d: 5, mDense: 35, mSparse: 8, noise: 0.18, epsMax: 0.25, alpha: 0.45, dL: 4, dP: 28, aqNoise: 0.16 },
+      "ultra-flat": { d: 5, mDense: 65, mSparse: 18, noise: 0.015, epsMax: 0.35, alpha: 0.35, dL: 3, dP: 24, aqNoise: 0.02 },
+      "overpacked": { d: 4, mDense: 30, mSparse: 8, noise: 0.04, epsMax: 0.30, alpha: 0.50, dL: 6, dP: 20, aqNoise: 0.04 }
+    };
+
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = presets[btn.dataset.preset];
+        if (!p) return;
+        Object.assign(state, p);
+        syncInputsFromState();
+        runAndRender();
+        showToast(t("toastPreset")(btn.textContent.trim()));
+      });
+    });
+
+    document.getElementById("btn-reroll").addEventListener("click", () => {
+      state.seed = (state.seed + 137) % 100000;
+      runAndRender();
+      showToast(t("toastSeed")(state.seed));
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      Object.assign(state, { seed: 42, ...presets["default"] });
+      syncInputsFromState();
+      runAndRender();
+      showToast(t("toastReset"));
+    });
+
+    document.getElementById("btn-export-json").addEventListener("click", () => {
+      if (!state.lastResults) return;
+      const blob = new Blob([JSON.stringify(state.lastResults, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `framela1_seed${state.seed}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast(t("toastExport"));
+    });
+
+    const modal = document.getElementById("deploy-modal");
+    const openModal = () => { modal.classList.remove("hidden"); modal.classList.add("flex"); };
+    const closeModal = () => { modal.classList.add("hidden"); modal.classList.remove("flex"); };
+    document.getElementById("btn-deploy-modal").addEventListener("click", openModal);
+    document.getElementById("btn-close-modal").addEventListener("click", closeModal);
+    document.getElementById("btn-ok-modal").addEventListener("click", closeModal);
+    modal.addEventListener("click", (ev) => { if (ev.target === modal) closeModal(); });
+
+    applyLanguage(currentLang, false);
+    syncInputsFromState();
+    runAndRender();
+  </script>
+</body>
+</html>
